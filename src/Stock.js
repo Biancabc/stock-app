@@ -46,7 +46,6 @@ class Stock extends React.Component{
     }
 
     handleSubmit(event) {
-        // alert('A name was submitted: ' + this.state.inputSymbol);
         event.preventDefault();
         this.fetchStock();
     }
@@ -68,44 +67,29 @@ class Stock extends React.Component{
         let stockChartYValuesFunction = [];
         let symbol = parent.state.inputSymbol;
         let apiCall = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&outputsize=compact&apikey=${apiKey}`;
-        let i = 0;
-        // let contor = 0;
 
         fetch(apiCall)
             .then(
                 function(response) {
-                    return response.json();
+                    if(response.status === 200){
+                        return response.json();
+                    }else if(response.status !== 200){
+                        alert('Try another symbol. Your symbol is incorrect.');
+                    }
                 }
             )
             .then(
                 function(data) {
-                    console.log(data);
-                   if(parent.state.selectedOption === '10'){
-                       i = 10;
-                   } else if(parent.state.selectedOption === '50'){
-                       i = 50;
-                   } else if(parent.state.selectedOption === 'default'){
-                       i = 100;
-                   }
-                    console.log(i);
-                    // let dataArr = [];
-                    // let dataArrVal = [];
-                    for (var key in data['Time Series (Daily)']) {
-                        // dataArr.push(key);
-                        // dataArrVal.push(parseFloat(data['Time Series (Daily)'][key]['1. open']));
-                        chart['labels'].push(key);
-                        chart['datasets'][0]['data'].push(parseFloat(data['Time Series (Daily)'][key]['1. open']));
+                    if(data['Error Message']) {
+                        alert('Please try another symbol! Your symbol is incorrect.');
+                    } else {
+                        for (var key in data['Time Series (Daily)']) {
+                            chart['labels'].push(key);
+                            chart['datasets'][0]['data'].push(parseFloat(data['Time Series (Daily)'][key]['1. open']));
+                        }
+                        title ='Stock Price for '+ parent.state.inputSymbol;
+                        chart['datasets'][0]['label']= title;
                     }
-                    // for(let j =0; j<i; j++){
-                    //     chart['labels'].push(dataArr[j]);
-                    //     chart['datasets'][0]['data'].push(dataArrVal[j]);
-                    // }
-
-                    console.log(chart);
-
-                    title ='Stock Price for '+ parent.state.inputSymbol;
-                    chart['datasets'][0]['label']= title;
-
                     parent.setState({
                         axisX: stockChartXValuesFunction,
                         axisY: stockChartYValuesFunction
@@ -114,7 +98,6 @@ class Stock extends React.Component{
                 }
             )
     }
-
     render(){
         return (
             <div className="stock">
